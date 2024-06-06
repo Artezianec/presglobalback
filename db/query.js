@@ -3,6 +3,11 @@ const query = {
         register: 'insert into users (login, password) values (?,?)',
         select: 'select login from users where login = ?',
         login: 'select * from users where login = ?',
+        updatePrice: 'update users set price = ? where login = ?',
+        setOnWorkDay: 'update users set onWorkDay = ? where login = ?',
+        setOnBreak: 'update users set onBreak = ? where login = ?',
+    },
+    workday: {
         addWorkDay: 'insert into workdays (user, datetime_entry, datetime_exit) VALUES (?, ?, ?)',
         getAllWorkDays: 'select id, user, datetime_entry, datetime_exit,comment from workdays where user = ?',
         addBreak: 'insert into breaks (workday_id, time_entry, time_exit,user) VALUES (?, ?, ?,?);',
@@ -14,10 +19,7 @@ const query = {
         updateBreakTimeExit: 'update breaks set time_exit = ? where id = ?',
         checkWorkDayExists: 'select * from workdays where user = ? AND id = ?',
         checkBreakExists: 'select * from breaks where user = ? AND id = ?',
-        setOnWorkDay: 'update users set onworkday = ? where login = ?',
-        setOnBreak: 'update users set onbreak = ? where login = ?',
-        getBreaksByWorkdayId: 'select * from breaks where workday_id = ?',
-        updatePrice: 'update users set price = ? where login = ?'
+        getBreaksByWorkdayId: 'select * from breaks where workday_id = ?'
     }
 };
 

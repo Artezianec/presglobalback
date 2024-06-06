@@ -14,8 +14,7 @@ const corsOptions = {
 const PORT = 3000;
 
 const indexRouter = require('./routes/index');
-const userLogin = require('./routes/user/login');
-const userRegister = require('./routes/user/register');
+const user = require('./routes/user/user');
 const workDays = require('./routes/user/workDays');
 
 
@@ -32,8 +31,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/login', userLogin);
-app.use('/register', userRegister);
+app.use('/', user);
 app.use('/workDays', workDays);
 
 

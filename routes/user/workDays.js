@@ -24,7 +24,7 @@ router.post('/addWorkDay', async (req, res) => {
         const datetime_entry = req.body.datetime_entry;
         const datetime_exit = req.body.datetime_exit;
 
-        db.execute($query.user.addWorkDay, [userLogin, datetime_entry, datetime_exit], (err, result) => {
+        db.execute($query.workday.addWorkDay, [userLogin, datetime_entry, datetime_exit], (err, result) => {
             if (err) {
                 console.error('Error adding workday:', err);
                 return res.status(500).send('Server error');
@@ -35,7 +35,10 @@ router.post('/addWorkDay', async (req, res) => {
                     return res.status(500).send('Server error');
                 }
             })
-            res.json(result.insertId);
+            res.json({
+                message: 'Workday added successfully',
+                onWorkDay: result.insertId
+            })
         });
     } catch (error) {
         console.error('Error decoding token:', error);
@@ -54,7 +57,7 @@ router.get('/getAllWorkDays', async (req, res) => {
 
         const {login: userLogin} = decoded;
 
-        db.execute($query.user.getAllWorkDays, [userLogin], (err, results) => {
+        db.execute($query.workday.getAllWorkDays, [userLogin], (err, results) => {
             if (err) {
                 console.error('Error fetching workdays:', err);
                 return res.status(500).send('Server error');
@@ -82,7 +85,7 @@ router.post('/addBreak', async (req, res) => {
         const datetime_entry = req.body.datetime_entry;
         const datetime_exit = req.body.datetime_exit;
 
-        db.execute($query.user.addBreak, [workdayId, datetime_entry, datetime_exit, userLogin], (err, result1) => {
+        db.execute($query.workday.addBreak, [workdayId, datetime_entry, datetime_exit, userLogin], (err, result1) => {
             if (err) {
                 console.error('Error adding Break:', err);
                 return res.status(500).send('Server error');
@@ -95,7 +98,7 @@ router.post('/addBreak', async (req, res) => {
                     return res.status(500).send('Server error');
                 }
                 res.json({
-                    onbreak: breakId
+                    onBreak: breakId
                 });
             });
         });
@@ -117,7 +120,7 @@ router.put('/addCommentToWorkDay', async (req, res) => {
         const workdayId = req.body.workdayId;
         const comment = req.body.comment;
 
-        db.execute($query.user.checkWorkDayExists, [userLogin, workdayId], (err, results) => {
+        db.execute($query.workday.checkWorkDayExists, [userLogin, workdayId], (err, results) => {
             if (err) {
                 console.error('Error checking workday existence:', err);
                 return res.status(500).send('Server error');
@@ -127,7 +130,7 @@ router.put('/addCommentToWorkDay', async (req, res) => {
                 return res.status(404).send('WorkdayId not found');
             }
 
-            db.execute($query.user.addCommentToWorkDay, [comment, workdayId], (err, result) => {
+            db.execute($query.workday.addCommentToWorkDay, [comment, workdayId], (err, result) => {
                 if (err) {
                     console.error('Error adding comment To WorkDay:', err);
                     return res.status(500).send('Server error');
@@ -154,7 +157,7 @@ router.put('/addCommentToBreak', async (req, res) => {
         const breakId = req.body.breakId;
         const comment = req.body.comment;
 
-        db.execute($query.user.checkBreakExists, [userLogin, breakId], (err, results) => {
+        db.execute($query.workday.checkBreakExists, [userLogin, breakId], (err, results) => {
             if (err) {
                 console.error('Error checking workday existence:', err);
                 return res.status(500).send('Server error');
@@ -164,7 +167,7 @@ router.put('/addCommentToBreak', async (req, res) => {
                 return res.status(404).send('WorkdayId not found');
             }
 
-            db.execute($query.user.addCommentToBreak, [comment, breakId], (err, result) => {
+            db.execute($query.workday.addCommentToBreak, [comment, breakId], (err, result) => {
                 if (err) {
                     console.error('Error adding Comment to Break:', err);
                     return res.status(500).send('Server error');
@@ -190,7 +193,7 @@ router.put('/updateDateTimeEntry', async (req, res) => {
         const workdayId = req.body.workdayId;
         const datetime_entry = req.body.datetime_entry;
 
-        db.execute($query.user.checkWorkDayExists, [userLogin, workdayId], (err, results) => {
+        db.execute($query.workday.checkWorkDayExists, [userLogin, workdayId], (err, results) => {
             if (err) {
                 console.error('Error checking workday existence:', err);
                 return res.status(500).send('Server error');
@@ -200,7 +203,7 @@ router.put('/updateDateTimeEntry', async (req, res) => {
                 return res.status(404).send('WorkdayId not found');
             }
 
-            db.execute($query.user.updateDateTimeEntry, [datetime_entry, workdayId], (err, result) => {
+            db.execute($query.workday.updateDateTimeEntry, [datetime_entry, workdayId], (err, result) => {
                 if (err) {
                     console.error('Error update DateTime Entry:', err);
                     return res.status(500).send('Server error');
@@ -227,7 +230,7 @@ router.put('/updateDateTimeExit', async (req, res) => {
         const datetime_exit = req.body.datetime_exit;
 
         const workdayExists = await new Promise((resolve, reject) => {
-            db.execute($query.user.checkWorkDayExists, [userLogin, workdayId], (err, results) => {
+            db.execute($query.workday.checkWorkDayExists, [userLogin, workdayId], (err, results) => {
                 if (err) return reject('Error checking workday existence:', err);
                 resolve(results.length > 0);
             });
@@ -238,7 +241,7 @@ router.put('/updateDateTimeExit', async (req, res) => {
         }
 
         await new Promise((resolve, reject) => {
-            db.execute($query.user.updateDateTimeExit, [datetime_exit, workdayId], (err) => {
+            db.execute($query.workday.updateDateTimeExit, [datetime_exit, workdayId], (err) => {
                 if (err) return reject('Error update DateTime Exit:', err);
                 resolve();
             });
@@ -259,12 +262,12 @@ router.put('/updateDateTimeExit', async (req, res) => {
         });
 
         const workdays = await new Promise((resolve, reject) => {
-            db.execute($query.user.getAllWorkDays, [userLogin], async (err, workdays) => {
+            db.execute($query.workday.getAllWorkDays, [userLogin], async (err, workdays) => {
                 if (err) return reject('Error fetching workdays:', err);
 
                 const workdaysWithBreaks = await Promise.all(workdays.map(async (workday) => {
                     const breaks = await new Promise((resolve, reject) => {
-                        db.execute($query.user.getBreaksByWorkdayId, [workday.id], (err, breaks) => {
+                        db.execute($query.workday.getBreaksByWorkdayId, [workday.id], (err, breaks) => {
                             if (err) return reject('Error fetching breaks:', err);
                             resolve(breaks);
                         });
@@ -279,8 +282,8 @@ router.put('/updateDateTimeExit', async (req, res) => {
         console.log('Workdays retrieved successfully');
         res.json({
             message: 'Operation successful',
-            onbreak: 0,
-            onworkday :0,
+            onBreak: 0,
+            onWorkDay :0,
             workdays: workdays
         });
     } catch (error) {
@@ -300,7 +303,7 @@ router.put('/updateBreakTimeEntry', async (req, res) => {
         const {id: userId, login: userLogin} = decoded;
         const breakId = req.body.breakId;
         const datetime_entry = req.body.datetime_entry;
-        db.execute($query.user.checkBreakExists, [userLogin, breakId], (err, results) => {
+        db.execute($query.workday.checkBreakExists, [userLogin, breakId], (err, results) => {
             if (err) {
                 console.error('Error checking workday existence:', err);
                 return res.status(500).send('Server error');
@@ -309,7 +312,7 @@ router.put('/updateBreakTimeEntry', async (req, res) => {
             if (results.length === 0) {
                 return res.status(404).send('breakId not found');
             }
-            db.execute($query.user.updateBreakTimeEntry, [datetime_entry, breakId], (err, result) => {
+            db.execute($query.workday.updateBreakTimeEntry, [datetime_entry, breakId], (err, result) => {
                 if (err) {
                     console.error('Error update DateTime Entry:', err);
                     return res.status(500).send('Server error');
@@ -359,7 +362,7 @@ router.put('/updateBreakTimeExit', async (req, res) => {
         const {id: userId, login: userLogin} = decoded;
         const breakId = req.body.breakId;
         const datetime_exit = req.body.datetime_exit;
-        db.execute($query.user.checkBreakExists, [userLogin, breakId], (err, results) => {
+        db.execute($query.workday.checkBreakExists, [userLogin, breakId], (err, results) => {
             if (err) {
                 console.error('Error checking workday existence:', err);
                 return res.status(500).send('Server error');
@@ -368,7 +371,7 @@ router.put('/updateBreakTimeExit', async (req, res) => {
             if (results.length === 0) {
                 return res.status(404).send('breakId not found');
             }
-            db.execute($query.user.updateBreakTimeExit, [datetime_exit, breakId], (err, result) => {
+            db.execute($query.workday.updateBreakTimeExit, [datetime_exit, breakId], (err, result) => {
                 if (err) {
                     console.error('Error update DateTime Exit:', err);
                     return res.status(500).send('Server error');
@@ -399,7 +402,7 @@ router.get('/exportXLSX', async (req, res) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const {login: userLogin} = decoded;
 
-        db.execute($query.user.getAllWorkDays, [userLogin], async (err, results) => {
+        db.execute($query.workday.getAllWorkDays, [userLogin], async (err, results) => {
             if (err) {
                 console.error('Error fetching workdays:', err);
                 return res.status(500).send('Server error');
@@ -440,7 +443,7 @@ router.get('/exportPDF', async (req, res) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const {login: userLogin} = decoded;
 
-        db.execute($query.user.getAllWorkDays, [userLogin], async (err, results) => {
+        db.execute($query.workday.getAllWorkDays, [userLogin], async (err, results) => {
             if (err) {
                 console.error('Error fetching workdays:', err);
                 return res.status(500).send('Server error');
@@ -498,7 +501,7 @@ router.get('/exportCSV', async (req, res) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const {login: userLogin} = decoded;
 
-        db.execute($query.user.getAllWorkDays, [userLogin], async (err, results) => {
+        db.execute($query.workday.getAllWorkDays, [userLogin], async (err, results) => {
             if (err) {
                 console.error('Error fetching workdays:', err);
                 return res.status(500).send('Server error');
